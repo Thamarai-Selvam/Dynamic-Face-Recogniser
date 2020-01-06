@@ -5,13 +5,14 @@ import os
 import cv2
 import datetime
 import enroll as e
+import shutil 
 
 #start webcam
 video = cv2.VideoCapture(0)
 
-#Load and encode data(pictures) from folder
-#my_dir = 'faces/' # Folder where all your image files reside
 f_encoding = [] # Create an empty list for saving encoded files
+
+#TODO : Add Text Log too in addition to video logs.
 
 print('Loading DataSet...')
 failed = 0
@@ -21,13 +22,13 @@ for folder in os.listdir(cwd):
     fold_name = folder
     folder = 'faces/' + folder
     if os.path.isdir(folder):
-        print('\tLoading :'+folder)
+        #print('\tLoading :'+folder)
         for subfolder in os.listdir(folder):
-            print('\t\t'+subfolder)
+            #print('\t\t'+subfolder)
             path = folder + '/' + subfolder + '/*.jpg'
             for img in glob.glob(path): # Add all images to comparison list
                 try:
-                    print('\t\t\t'+img)
+                    #print('\t\t\t'+img)
                     kfn += [fold_name]
                     image = face_rec.load_image_file(img) 
                     f_encoding.append(face_rec.face_encodings(image)[0]) # Append the results
@@ -35,27 +36,15 @@ for folder in os.listdir(cwd):
                 except:
                     failed += 1
             else:
-                print('\t\t\tNo images found')
+                #print('\t\t\tNo images found')
+                pass
+
 print('Loaded ' + str(len(f_encoding)) + ' samples')
 print('Failed Loading ' + str(failed) + ' samples')
+
 #Copying Encoded faces from f_encoding to Known Face Encoding(kfe)
 kfe = f_encoding.copy()
 
-
-#Loading known face names(kfn) from image names reside in folder
-#kfn = []
-#parent_dir = 'faces/'
-#results = [os.path.basename(f) for f in glob.glob(os.path.join(parent_dir, '*.jpg'))]   
-#for i in range(len(results)):
-#    a = results[i]
-#    a = a[ : -4]
-#    kfn.append(a)
-
-#for name in os.listdir(cwd):
-#    dirr = 'faces/' + name
-#    if os.path.isdir(dirr):
-#        kfn.append(name)
-print(*kfn)
 
 names = []
 flag = True
@@ -65,6 +54,13 @@ ctr=0
 prev_name = " "
 
 print('Press " e " | " r " to enroll..')
+
+width = int(video.get(3))
+height = int(video.get(4))
+vname  = 'output.avi'
+
+out = cv2.VideoWriter(vname,cv2.VideoWriter_fourcc('M','J','P','G'), 10, (width,height))
+
 while(1):
     ret,frame = video.read() #grab frame by frame while(1)
 
@@ -119,21 +115,12 @@ while(1):
 
             names.append(name)
     flag = not flag
+    out.write(frame)
+    cv2.imshow('Video', frame) #show frames as being processed.
 
-    # Display the results
-    #for (top, right, bottom, left), name in zip(floc, names):
-    #    top *= 4    # resize image back again by *0.25
-    #    right *= 4
-    #    bottom *= 4
-    #   left *= 4
+    #No markings are done on live frames so as to reduce the flickering on screen/video feed. Instead, as like on generic systems, results are shown on a terminal/console.
 
-        #cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)# Draw a box around the face
-        #cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 255, 0), cv2.FILLED)
-        #font = cv2.FONT_HERSHEY_DUPLEX
-        #cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (136, 227, 182), 1) #label the face
-        
-    
-    cv2.imshow('Video', frame)
+    #TODO : Show on Text Area while adding Flask front-end.
 
     
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -143,7 +130,37 @@ while(1):
         video.release()
         cv2.destroyAllWindows()
         e.enroll()
+    out.release()
+   
 
+#saving video logs to personal folder.
+
+#TODO : Log Entry Exits Seperately.
+
+per_name = ' '
+
+for name in names:
+    if per_name != name:
+        if name != 'Unknown' or name != 'Suspect':
+            now = datetime.datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            try:
+                os.mkdir('faces/' + name + '/' + str(datetime.date.today()))
+            except:
+                pass
+            dest = 'faces/' + name + '/' + str(datetime.date.today()) + '/' + str(current_time) + '.avi'
+            shutil.copyfile('output.avi',dest)
+        else: #save unknown entries...
+             now = datetime.datetime.now()
+             current_time = now.strftime("%H:%M:%S")
+             dest = 'unknownDetected/' + str(datetime.date.today()) + '_' +  str(current_time) + '.avi'
+
+             shutil.copyfile('output.avi',dest)
+        print('\n\t' + name + ' Video Logged...')
+
+    per_name = name
+
+#TODO : Create a new log for unknown persons with their respective video file name.'Enhancement #1'
 
 video.release()
 cv2.destroyAllWindows()
