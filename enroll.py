@@ -16,9 +16,10 @@ def enroll():
         subdir = 'faces/'+ name+'/' + str(datetime.date.today())
         os.mkdir(subdir)
         os.mkdir('faces/' + name+'/Enrollment_data')
-    except OSError:
-        print("Error !, Please try after sometime...")
-        exit()
+    except FileExistsError:
+        print("Error !, Person Already Exists...")
+        print('Might be a camera glitch... \n\t\tTrying again....')
+        return
     else:
         print("Starting Camera.... \nGet Ready...")
 

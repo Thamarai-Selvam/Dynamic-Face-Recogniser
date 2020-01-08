@@ -28,4 +28,6 @@ def store(names):
 
     #TODO : Create a new log for unknown persons with their respective video file name.'Enhancement #1'
 
+def sframes(name,frame):
+
 
