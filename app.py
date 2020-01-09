@@ -7,6 +7,8 @@ import datetime
 import enroll as e
 import shutil 
 import store as s
+import random as r
+
 
 def loader(f_encoding, kfn, kfe):
 
@@ -53,6 +55,7 @@ def init(kfn, kfe):
     floc = []
     fe = []
     ctr=0
+    name = " "
     prev_name = " "
 
     print('Press " e " | " r " to enroll..')
@@ -120,8 +123,9 @@ def init(kfn, kfe):
                             s = 'Suspect'+str(ctr) #Detected Unknown face encoded as Suspect :)
                             kfn.append(s)
     
-
-        s.sframes(name,frame)
+        r1 = r.randint(0,100):
+        if r1 / 2 == 0:
+            s.sframes(name,frame)
         flag = not flag
         names += [name]
         cv2.imshow('Video', frame) #show frames as being processed.

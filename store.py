@@ -1,3 +1,7 @@
+import cv2
+import os
+import datetime
+
 
 def store(names):
     #TODO : Log Entry Exits Seperately.
@@ -28,6 +32,23 @@ def store(names):
 
     #TODO : Create a new log for unknown persons with their respective video file name.'Enhancement #1'
 
+
+class counter:
+    count = 0
 def sframes(name,frame):
+    try:
+        os.mkdir('faces/' + name)
+        subdir = 'faces/'+ name +'/' + str(datetime.date.today())
+        if os.path.isdir(subdir):
+            pass
+        else:
+            counter.count = 0
+        os.mkdir(subdir)
+    except:
+        pass
 
-
+    path ='faces/'+ name +'/' + str(datetime.date.today()) +'/'
+    fname = (str(counter.count) +'.jpg') 
+    cv2.imwrite(os.path.join(path , str(counter.count)+'.jpg'), frame)
+    counter.count += 1
+    return
